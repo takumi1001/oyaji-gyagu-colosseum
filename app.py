@@ -44,7 +44,6 @@ def login():
         # 何らかの認証
         login_user(User("hoge1"))
         next = request.form["next"]
-        print(next)
         # is_safe_url should check if the url is safe for redirects.
         if is_safe_url(next, {f"dbs1.slis.tsukuba.ac.jp:{SECRETS.PORT}"}):
             return redirect(next)
