@@ -1,0 +1,14 @@
+<h1>親父ギャクコロシアム</h1>
+<div>
+    {% if current_user.is_authenticated %}
+        id:{{ current_user.id }}でログイン中です．
+        <a href="/logout">ログアウト</a>
+    {% else %}
+    <a href="/login">ログイン</a>していません．
+    {% endif %}
+    <p>トップページ</p>
+    <h3>
+        <a href="/post">投稿する</a> 
+    </h3>
+    
+</div>
