@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from flask import Flask, render_template, request, session, redirect, url_for, abort
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from is_safe_url import is_safe_url
 
 
@@ -36,6 +36,8 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
     if request.method == "GET":
         return render_template("login.html")
     if request.method == "POST":
