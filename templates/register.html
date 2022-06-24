@@ -1,0 +1,22 @@
+<h1>親父ギャクコロシアム</h1>
+<div>
+    <p>登録</p>
+    <div style="color:red">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+         {% endwith %}
+    </div>
+    <form action="/register" method="POST">
+        ユーザーID:
+        <input type="text" name="user_id" placeholder="user_id" required>
+        パスワード:
+        <input type="password"  name="password" required>
+        <input type="submit" value="登録">
+    </form>
+</div>
