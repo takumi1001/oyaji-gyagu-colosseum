@@ -91,7 +91,7 @@ def login():
         login_user(User(user_id))
         next = request.form["next"]
         # is_safe_url should check if the url is safe for redirects.
-        if is_safe_url(next, {f"dbs1.slis.tsukuba.ac.jp:{SECRETS.PORT}"}):
+        if is_safe_url(next, SECRETS.SAFE_LIST):
             return redirect(next)
         else:
             return abort(400)
@@ -103,6 +103,10 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
     if request.method == "POST":
+        # CSRF対策
+        if  not is_safe_url(request.referrer, SECRETS.SAFE_LIST):
+            flash("リファラが不正のためリクエストは実行されませんでした．")
+            return render_template("register.html")
         user_id = request.form["user_id"]
         password = request.form["password"]
 
