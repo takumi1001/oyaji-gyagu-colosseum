@@ -214,16 +214,18 @@ jinja2.filters.FILTERS["timeshow"] = timeshow
 def view():
     db = create_mongodb_connection()
     gyagus = db.gyagus.find()
+    skey = str(request.args.get("sortkey",""))
+    stype = int(request.args.get("sorttype", 0))
+    if skey in ["funs","colds","created_at"]:
+        if stype in [1,-1]:
+            gyagus = gyagus.sort(skey, stype)
     return render_template("view.html", gyagus=gyagus)
-
-
 
 @app.route("/vote", methods=["GET"])
 @login_required
 def vote():
     # CSRF 対策
     if not  request.referrer in SECRETS.VIEW_LIST:
-        flash("リファラが不正のためリクエストは実行されませんでした．")
         return redirect(url_for("view"))
     gid = request.args.get("gid", "")
     vtype = request.args.get("type", "")
@@ -258,6 +260,8 @@ def vote():
     return redirect(url_for("view"))
 
 def already_vote(gid, vtype):
+    if not current_user.is_authenticated:
+        return ""
     if not vtype in ["fun", "cold"]:
         return ""
     db = create_mongodb_connection()

@@ -3,6 +3,8 @@
     {% if current_user.is_authenticated %}
     id:{{ current_user.id }}でログイン中です．
     <a href="/logout">ログアウト</a>
+    {% else %}
+    <a href="/login">ログイン</a>していません．
 {% endif %}
     <h3>閲覧する</h3>
     <div style="color:red">
@@ -22,9 +24,18 @@
         <tr>
           <th>親父ギャグ</th>
           <th>投稿者</th>
-          <th>😄</th>
-          <th>🥶</th>
-          <th>作成日時(UTC)</th>
+          <th>😄<br>
+            <a href="?sortkey=funs&sorttype=1">[昇順]</a>
+            <a href="?sortkey=funs&sorttype=-1">[降順]</a>
+          </th>
+          <th>🥶<br>
+            <a href="?sortkey=colds&sorttype=1">[昇順]</a>
+            <a href="?sortkey=colds&sorttype=-1">[降順]</a>
+          </th>
+          <th>作成日時(UTC)<br>
+            <a href="?sortkey=created_at&sorttype=1">[昇順]</a>
+            <a href="?sortkey=created_at&sorttype=-1">[降順]</a>
+          </th>
           <th>評価する</th>
         </tr>
       </thread>
