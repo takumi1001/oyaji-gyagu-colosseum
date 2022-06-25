@@ -198,7 +198,7 @@ def post_execute():
     gyagu_doc = {"gyagu": str(gyagu), 
                          "creater": str(current_user.id),
                         "funs": int(0), "colds": int(0),
-                        "fun_users": {} , "cold_users" : {},
+                        "fun_users":   [] , "cold_users" : [],
                         "created_at": float(dt.timestamp())
                         }
     result = db.gyagus.insert_one(gyagu_doc)    
