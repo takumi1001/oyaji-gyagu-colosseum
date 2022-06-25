@@ -1,0 +1,28 @@
+<h1>親父ギャクコロシアム</h1>
+<div>
+    {% if current_user.is_authenticated %}
+    id:{{ current_user.id }}でログイン中です．
+    <a href="/logout">ログアウト</a>
+{% endif %}
+    <h3>投稿の確認</h3>
+    <div style="color:red">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+         {% endwith %}
+    </div>
+    下記の内容で投稿します．よろしいですか？
+    <form action="/post_execute" method="POST">
+        <input type="text" name="gyagu"  required size="80%" readonly value="{{ request.form['gyagu'] }}">
+        <input type="submit" value="投稿">
+    </form>
+    <form action="/post" method="POST">
+        <input type="hidden" name="gyagu" readonly value="{{ request.form['gyagu'] }}">
+        <input type="submit" value="前の画面に戻る">
+    </form>    
+    </div>

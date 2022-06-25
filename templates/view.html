@@ -1,0 +1,44 @@
+<h1>親父ギャクコロシアム</h1>
+<div>
+    {% if current_user.is_authenticated %}
+    id:{{ current_user.id }}でログイン中です．
+    <a href="/logout">ログアウト</a>
+{% endif %}
+    <h3>閲覧する</h3>
+    <div style="color:red">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+         {% endwith %}
+    </div>
+    {%if gyagus != 0 %}
+    <table>
+      <thread>
+        <tr>
+          <th>親父ギャグ</th>
+          <th>投稿者</th>
+          <th>😄</th>
+          <th>🥶</th>
+          <th>作成日時(UTC)</th>
+        </tr>
+      </thread>
+      <tbody>
+        {% for g in gyagus %}
+        <tr>
+          <td>{{ g.gyagu }}</td>
+          <td>{{ g.creater}}</td>
+          <td>😄:{{g.funs }} </td>
+          <td>🥶:{{g.colds}}</td>
+          <td>{{ g.created_at|timeshow }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    <a href="/">トップに戻る</a>
+</div>

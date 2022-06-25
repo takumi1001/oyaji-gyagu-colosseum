@@ -1,4 +1,5 @@
-from datetime import timedelta
+import datetime
+import time
 import re
 import secrets
 import hashlib
@@ -8,14 +9,15 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from is_safe_url import is_safe_url
 import mysql.connector
 import mysql.connector.errorcode
-
+import pymongo
+import jinja2
 
 # 機密情報を扱うSECRETS.pyをインポート
 import SECRETS
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRETS.KEY
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=15)
+app.config["PERMANENT_SESSION_LIFETIME"] = datetime.timedelta(minutes=15)
 login_manager = LoginManager()
 login_manager.login_view = "/login"
 login_manager.login_message = "サービスを利用するためにはログインが必要です．"
@@ -30,6 +32,13 @@ def get_mysql_conn():
         database=SECRETS.USER_ID
     )
     return conn
+
+def create_mongodb_connection():
+    user = SECRETS.USER_ID
+    pwd = SECRETS.PASSWORD
+    client = pymongo.MongoClient('mongodb://'+user+':'+pwd+SECRETS.MONGODB_PATH)
+    db = client[SECRETS.USER_ID]
+    return db
 
 class User(UserMixin):
     def __init__(self, uid):
@@ -153,8 +162,58 @@ def logout():
 @app.route("/post", methods=["GET", "POST"])
 @login_required
 def post():
-    return "工事中"
+    return render_template("post.html")
 
+@app.route("/post_confirm", methods=["POST"])
+@login_required
+def post_confirm():
+    # CSRF 対策
+    if not  request.referrer in SECRETS.POST_LIST:
+        flash("リファラが不正のためリクエストは実行されませんでした．")
+        return redirect(url_for("post"))
+    gyagu = request.form.get("gyagu", "")
+    if len(gyagu) < 1:
+        flash("何か入力してください．")
+        return redirect(url_for("post"))
+    if len(gyagu) > 100:
+        flash("投稿できるのは100文字までです．")
+        return redirect(url_for("post"))
+    return render_template("post_confirm.html")
+
+@app.route("/post_execute", methods=["POST"])
+@login_required
+def post_execute():
+    # CSRF 対策
+    if not  request.referrer in SECRETS.POST_CONFIRM_LIST:
+        flash("リファラが不正のためリクエストは実行されませんでした．")
+        return redirect(url_for("post"))
+    gyagu = request.form.get("gyagu", "")
+    if len(gyagu) < 1 or len(gyagu) > 100:
+        flash("不正なリクエストです．")
+        return redirect(url_for("post"))
+    
+    dt = datetime.datetime.now(datetime.timezone.utc) 
+    db = create_mongodb_connection()
+    gyagu_doc = {"gyagu": str(gyagu), 
+                         "creater": str(current_user.id),
+                        "funs": int(0), "colds": int(0),
+                        "fun_users": {} , "cold_users" : {},
+                        "created_at": float(dt.timestamp())
+                        }
+    result = db.gyagus.insert_one(gyagu_doc)    
+    return redirect(url_for("index"))
+
+def timeshow(value):
+    result = datetime.datetime.fromtimestamp(int(value))
+    return str(result)
+
+jinja2.filters.FILTERS["timeshow"] = timeshow
+
+@app.route("/view", methods=["GET"])
+def view():
+    db = create_mongodb_connection()
+    gyagus = db.gyagus.find()
+    return render_template("view.html", gyagus=gyagus)
 
 if __name__ == "__main__":
     app.run(debug=False, host='0.0.0.0', port=SECRETS.PORT)

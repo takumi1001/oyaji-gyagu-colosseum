@@ -1,0 +1,25 @@
+<h1>親父ギャクコロシアム</h1>
+<div>
+    {% if current_user.is_authenticated %}
+    id:{{ current_user.id }}でログイン中です．
+    <a href="/logout">ログアウト</a>
+{% endif %}
+    <h3>投稿する</h3>
+    <div style="color:red">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+         {% endwith %}
+    </div>
+    <form action="/post_confirm" method="POST">
+        親父ギャグを入力:
+        <input type="text" name="gyagu"  required size="80%" value="{{ request.form.get('gyagu', '') }}">
+        <input type="submit" value="投稿">
+    </form>
+    <a href="/">トップに戻る</a>
+</div>
