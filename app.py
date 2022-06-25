@@ -10,6 +10,7 @@ from is_safe_url import is_safe_url
 import mysql.connector
 import mysql.connector.errorcode
 import pymongo
+from bson.objectid import ObjectId
 import jinja2
 
 # 機密情報を扱うSECRETS.pyをインポート
@@ -214,6 +215,63 @@ def view():
     db = create_mongodb_connection()
     gyagus = db.gyagus.find()
     return render_template("view.html", gyagus=gyagus)
+
+
+
+@app.route("/vote", methods=["GET"])
+@login_required
+def vote():
+    # CSRF 対策
+    if not  request.referrer in SECRETS.VIEW_LIST:
+        flash("リファラが不正のためリクエストは実行されませんでした．")
+        return redirect(url_for("view"))
+    gid = request.args.get("gid", "")
+    vtype = request.args.get("type", "")
+    if not vtype in ["fun", "cold"]:
+        flash("不正なリクエストです．")
+        return redirect(url_for("view"))
+    
+    db = create_mongodb_connection()
+
+    try:
+        g = db.gyagus.find_one({"_id" : ObjectId(gid)})
+    except:
+        flash("不正なリクエストです．")
+        return redirect(url_for("view"))
+    
+    vlist = list(g[vtype + "_users"])
+    if current_user.id in  vlist:
+        flash("評価済みです．")
+        return redirect(url_for("view"))
+
+    num = int(g[vtype + "s"])
+    vlist.append(str(current_user.id))
+
+    db.gyagus.update_one({"_id" : ObjectId(gid)}, 
+    {"$set" : 
+        {
+            vtype + "s" : num+1, 
+            vtype + "_users" : vlist
+        } 
+    })
+
+    return redirect(url_for("view"))
+
+def already_vote(gid, vtype):
+    if not vtype in ["fun", "cold"]:
+        return ""
+    db = create_mongodb_connection()
+    try:
+        g = db.gyagus.find_one({"_id" : ObjectId(gid)})
+    except:
+        return ""
+    vlist = list(g[vtype + "_users"])
+    if current_user.id in  vlist:
+        return "visibility:hidden"
+    return ""
+
+jinja2.filters.FILTERS["already_vote"] = already_vote
+
 
 if __name__ == "__main__":
     app.run(debug=False, host='0.0.0.0', port=SECRETS.PORT)

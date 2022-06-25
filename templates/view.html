@@ -25,6 +25,7 @@
           <th>😄</th>
           <th>🥶</th>
           <th>作成日時(UTC)</th>
+          <th>評価する</th>
         </tr>
       </thread>
       <tbody>
@@ -35,6 +36,11 @@
           <td>😄:{{g.funs }} </td>
           <td>🥶:{{g.colds}}</td>
           <td>{{ g.created_at|timeshow }}</td>
+          <td>
+            <a href="/vote?gid={{g._id}}&type=fun" style="{{ g._id|already_vote('fun') }}">😄</a>
+            ・
+            <a href="/vote?gid={{g._id}}&type=cold" style="{{ g._id|already_vote('cold') }}">🥶</a>
+        </td>
         </tr>
         {% endfor %}
       </tbody>
